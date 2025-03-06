@@ -15,6 +15,7 @@
 
     <ItemGroup>
       <Folder Include="Db\" />
+      <Folder Include="Services\Restaurant\" />
     </ItemGroup>
 
 </Project>
