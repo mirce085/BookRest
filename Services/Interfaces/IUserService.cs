@@ -1,7 +1,7 @@
 using BookRest.Dtos.User;
 using BookRest.Other;
 
-namespace BookRest.Services.User;
+namespace BookRest.Services.Interfaces;
 
 public interface IUserService
 {
