@@ -4,7 +4,6 @@ namespace BookRest.Models;
 
 public class Reservation
 {
-    [Key]
     public int ReservationId { get; set; }
     
     public int UserId { get; set; }
@@ -19,9 +18,7 @@ public class Reservation
     public DateTime ReservationDateTime { get; set; }
     public int Duration { get; set; }
     public int NumberOfGuests { get; set; }
-
-    [Required]
-    [MaxLength(50)]
+    
     public string Status { get; set; }  // 'Pending', 'Confirmed'
 
     public string SpecialRequests { get; set; }

@@ -27,5 +27,8 @@ public class UserUpdateValidator : AbstractValidator<UserUpdateDto>
         RuleFor(u => u.PhoneNumber)
             .MaximumLength(20).WithMessage("Phone number cannot exceed 20 characters.")
             .When(u => !string.IsNullOrEmpty(u.PhoneNumber));
+        
+        RuleFor(dto => dto)
+            .Must(dto => dto.Email != null || dto.Password != null || dto.Role != null).WithMessage("You must change at least one field.");
     }
 }

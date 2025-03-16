@@ -5,14 +5,11 @@ namespace BookRest.Models;
 
 public class RestaurantSection
 {
-    [Key]
     public int SectionId { get; set; }
     
     public int RestaurantId { get; set; }
     public Restaurant Restaurant { get; set; }
 
-    [Required]
-    [MaxLength(100)]
     public string Name { get; set; }
 
     public string Description { get; set; }

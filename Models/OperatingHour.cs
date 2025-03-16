@@ -4,7 +4,6 @@ namespace BookRest.Models;
 
 public class OperatingHour
 {
-    [Key]
     public int OperatingHourId { get; set; }
     
     public int RestaurantId { get; set; }

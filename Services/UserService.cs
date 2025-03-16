@@ -5,12 +5,13 @@ using BookRest.Extensions;
 using BookRest.Models;
 using BookRest.Other;
 using BookRest.Services.Interfaces;
+using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookRest.Services;
 
-public class UserService(IDbContextFactory<AppDbContext> dbContextFactory, IMapper mapper) : IUserService
+public class UserService(IDbContextFactory<AppDbContext> dbContextFactory, IMapper mapper, IValidator<UserCreateDto> createValidator, IValidator<UserUpdateDto> updateValidator) : IUserService
 {
     public async Task<OperationResult<UserDisplayDto>> GetUserByIdAsync(int userId)
     {
@@ -40,6 +41,13 @@ public class UserService(IDbContextFactory<AppDbContext> dbContextFactory, IMapp
 
     public async Task<OperationResult<UserDisplayDto>> CreateUserAsync(UserCreateDto dto)
     {
+        var validationResult = await createValidator.ValidateAsync(dto);
+        if (!validationResult.IsValid)
+        {
+            var errors = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage));
+            return OperationResult<UserDisplayDto>.Fail(errors);
+        }
+        
         await using var dbContext = await dbContextFactory.CreateDbContextAsync();
         
         var emailExists = await dbContext.Users.AnyAsync(u => u.Email == dto.Email);
@@ -62,6 +70,13 @@ public class UserService(IDbContextFactory<AppDbContext> dbContextFactory, IMapp
 
     public async Task<OperationResult<UserDisplayDto>> UpdateUserAsync(int userId, UserUpdateDto dto)
     {
+        var validationResult = await updateValidator.ValidateAsync(dto);
+        if (!validationResult.IsValid)
+        {
+            var errors = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage));
+            return OperationResult<UserDisplayDto>.Fail(errors);
+        }
+        
         await using var dbContext = await dbContextFactory.CreateDbContextAsync();
 
         var user = await dbContext.Users.FindAsync(userId);
