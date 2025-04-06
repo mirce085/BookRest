@@ -12,14 +12,15 @@ public class User
     public string Email { get; set; }
 
     public string? PhoneNumber { get; set; }
-    
+
     public string Password { get; set; }
-    
+
     public UserRole Role { get; set; }
 
     public DateTime CreatedAt { get; set; }
-    
+
     public ICollection<Restaurant> OwnedRestaurants { get; set; }
     public ICollection<Reservation> Reservations { get; set; }
     public ICollection<Review> Reviews { get; set; }
+    public ICollection<RefreshToken> RefreshTokens { get; set; }
 }

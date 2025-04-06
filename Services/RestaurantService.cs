@@ -11,7 +11,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BookRest.Services;
 
-public class RestaurantService(IDbContextFactory<AppDbContext> dbContextFactory, IMapper mapper, IValidator<RestaurantCreateDto> createValidator, IValidator<RestaurantUpdateDto> updateValidator) : IRestaurantService
+public class RestaurantService(
+    IDbContextFactory<AppDbContext> dbContextFactory,
+    IMapper mapper,
+    IValidator<RestaurantCreateDto> createValidator,
+    IValidator<RestaurantUpdateDto> updateValidator) : IRestaurantService
 {
     public async Task<OperationResult<RestaurantDisplayDto>> GetRestaurantByIdAsync(int restaurantId)
     {
@@ -22,7 +26,7 @@ public class RestaurantService(IDbContextFactory<AppDbContext> dbContextFactory,
         {
             return OperationResult<RestaurantDisplayDto>.Fail("Restaurant not found.");
         }
-        
+
         var userDto = mapper.Map<RestaurantDisplayDto>(restaurant);
 
         return OperationResult<RestaurantDisplayDto>.Ok(userDto);
@@ -47,24 +51,25 @@ public class RestaurantService(IDbContextFactory<AppDbContext> dbContextFactory,
             var errors = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage));
             return OperationResult<RestaurantDisplayDto>.Fail(errors);
         }
-        
+
         await using var dbContext = await dbContextFactory.CreateDbContextAsync();
-        
+
         bool ownerExists = await dbContext.Users.AnyAsync(u => u.UserId == dto.OwnerId && u.Role == UserRole.Owner);
         if (!ownerExists)
             return OperationResult<RestaurantDisplayDto>.Fail("Owner not found or user is not an Owner.");
-        
+
         var restaurant = mapper.Map<Restaurant>(dto);
 
         dbContext.Restaurants.Add(restaurant);
         await dbContext.SaveChangesAsync();
-        
+
         var createdDto = mapper.Map<RestaurantDisplayDto>(restaurant);
 
         return OperationResult<RestaurantDisplayDto>.Ok(createdDto);
     }
 
-    public async Task<OperationResult<RestaurantDisplayDto>> UpdateRestaurantAsync(int restaurantId, RestaurantUpdateDto dto)
+    public async Task<OperationResult<RestaurantDisplayDto>> UpdateRestaurantAsync(int restaurantId,
+        RestaurantUpdateDto dto)
     {
         var validationResult = await updateValidator.ValidateAsync(dto);
         if (!validationResult.IsValid)
@@ -72,13 +77,13 @@ public class RestaurantService(IDbContextFactory<AppDbContext> dbContextFactory,
             var errors = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage));
             return OperationResult<RestaurantDisplayDto>.Fail(errors);
         }
-        
+
         await using var dbContext = await dbContextFactory.CreateDbContextAsync();
-        
+
         var restaurant = await dbContext.Restaurants.FindAsync(restaurantId);
         if (restaurant == null)
             return OperationResult<RestaurantDisplayDto>.Fail("Restaurant not found.");
-        
+
         if (!string.IsNullOrWhiteSpace(dto.Name)) restaurant.Name = dto.Name;
         if (!string.IsNullOrWhiteSpace(dto.Description)) restaurant.Description = dto.Description;
         if (!string.IsNullOrWhiteSpace(dto.Address)) restaurant.Address = dto.Address;
@@ -94,7 +99,7 @@ public class RestaurantService(IDbContextFactory<AppDbContext> dbContextFactory,
         restaurant.UpdatedAt = DateTime.UtcNow;
 
         await dbContext.SaveChangesAsync();
-        
+
         var updatedDto = mapper.Map<RestaurantDisplayDto>(restaurant);
 
         return OperationResult<RestaurantDisplayDto>.Ok(updatedDto);
@@ -115,7 +120,7 @@ public class RestaurantService(IDbContextFactory<AppDbContext> dbContextFactory,
     }
 
     public async Task<OperationResult<IEnumerable<RestaurantDisplayDto>>> GetRestaurantsByCityAsync(string city)
-    {        
+    {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync();
 
         var result = await dbContext.Restaurants
@@ -126,7 +131,8 @@ public class RestaurantService(IDbContextFactory<AppDbContext> dbContextFactory,
         return OperationResult<IEnumerable<RestaurantDisplayDto>>.Ok(result);
     }
 
-    public async Task<OperationResult<IEnumerable<RestaurantDisplayDto>>> SearchRestaurantsAsync(string? city, string? tag)
+    public async Task<OperationResult<IEnumerable<RestaurantDisplayDto>>> SearchRestaurantsAsync(string? city,
+        string? tag)
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync();
 
@@ -134,7 +140,7 @@ public class RestaurantService(IDbContextFactory<AppDbContext> dbContextFactory,
             .Where(r => city != null && r.City.ToLower().Contains(city.ToLower()))
             .Select(r => mapper.Map<RestaurantDisplayDto>(r))
             .ToListAsync();
-        
+
         var result2 = await dbContext.Restaurants
             .Where(r => r.Tags.Any(rt =>
                 tag != null &&

@@ -12,7 +12,7 @@ public static class UserEndpoints
         group.MapGet("/", async (IUserService userService) =>
         {
             var users = await userService.GetAllUsersAsync();
-            return Results.Ok(users);  // returns a list of UserDisplayDto
+            return Results.Ok(users);
         });
         
         group.MapGet("/{id:int}", async (int id, IUserService userService) =>

@@ -15,6 +15,7 @@ public class AppDbContext(IConfiguration configuration) : DbContext
     public DbSet<MenuItem> MenuItems { get; set; }
     public DbSet<Review> Reviews { get; set; }
     public DbSet<Tag> Tags { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -36,6 +37,10 @@ public class AppDbContext(IConfiguration configuration) : DbContext
             entity.Property(u => u.Role).IsRequired().HasMaxLength(50);
             entity.Property(u => u.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
+        
+        modelBuilder.Entity<RefreshToken>()
+            .HasIndex(r => r.Token)
+            .IsUnique();
 
         modelBuilder.Entity<Restaurant>(entity =>
         {

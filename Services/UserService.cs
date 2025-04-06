@@ -11,7 +11,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BookRest.Services;
 
-public class UserService(IDbContextFactory<AppDbContext> dbContextFactory, IMapper mapper, IValidator<UserCreateDto> createValidator, IValidator<UserUpdateDto> updateValidator) : IUserService
+public class UserService(
+    IDbContextFactory<AppDbContext> dbContextFactory,
+    IMapper mapper,
+    IValidator<UserCreateDto> createValidator,
+    IValidator<UserUpdateDto> updateValidator,
+    IPasswordHasher<User> passwordHasher) : IUserService
 {
     public async Task<OperationResult<UserDisplayDto>> GetUserByIdAsync(int userId)
     {
@@ -22,7 +27,7 @@ public class UserService(IDbContextFactory<AppDbContext> dbContextFactory, IMapp
         {
             return OperationResult<UserDisplayDto>.Fail("User not found.");
         }
-        
+
         var userDto = mapper.Map<UserDisplayDto>(user);
 
         return OperationResult<UserDisplayDto>.Ok(userDto);
@@ -47,22 +52,22 @@ public class UserService(IDbContextFactory<AppDbContext> dbContextFactory, IMapp
             var errors = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage));
             return OperationResult<UserDisplayDto>.Fail(errors);
         }
-        
+
         await using var dbContext = await dbContextFactory.CreateDbContextAsync();
-        
+
         var emailExists = await dbContext.Users.AnyAsync(u => u.Email == dto.Email);
         if (emailExists)
         {
             return OperationResult<UserDisplayDto>.Fail("Email already in use.");
         }
 
-        dto.Password = dto.Password.HashString();
-        
         var user = mapper.Map<User>(dto);
+
+        user.Password = passwordHasher.HashPassword(user, user.Password);
 
         dbContext.Users.Add(user);
         await dbContext.SaveChangesAsync();
-        
+
         var userDto = mapper.Map<UserDisplayDto>(user);
 
         return OperationResult<UserDisplayDto>.Ok(userDto);
@@ -76,7 +81,7 @@ public class UserService(IDbContextFactory<AppDbContext> dbContextFactory, IMapp
             var errors = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage));
             return OperationResult<UserDisplayDto>.Fail(errors);
         }
-        
+
         await using var dbContext = await dbContextFactory.CreateDbContextAsync();
 
         var user = await dbContext.Users.FindAsync(userId);
@@ -84,7 +89,7 @@ public class UserService(IDbContextFactory<AppDbContext> dbContextFactory, IMapp
         {
             return OperationResult<UserDisplayDto>.Fail("User not found.");
         }
-        
+
         if (!string.IsNullOrWhiteSpace(dto.Username))
             user.Username = dto.Username;
 
@@ -116,7 +121,7 @@ public class UserService(IDbContextFactory<AppDbContext> dbContextFactory, IMapp
     public async Task<OperationResult<bool>> DeleteUserAsync(int userId)
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync();
-        
+
         var user = await dbContext.Users.FindAsync(userId);
         if (user == null)
         {
