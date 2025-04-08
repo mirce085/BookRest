@@ -25,19 +25,19 @@ public static class RestaurantEndpoints
         {
             var createdRestaurant = await restaurantService.CreateRestaurantAsync(dto);
             return Results.Created($"/api/restaurants/{createdRestaurant.Data!.RestaurantId}", createdRestaurant);
-        });
+        }).RequireAuthorization("OwnerOrAdmin");
         
         group.MapPut("/{id:int}", async (int id, RestaurantUpdateDto dto, IRestaurantService restaurantService) =>
         {
             var updatedRestaurant = await restaurantService.UpdateRestaurantAsync(id, dto);
             return Results.Ok(updatedRestaurant);
-        });
+        }).RequireAuthorization("IsRestaurantOwner");
 
         group.MapDelete("/{id:int}", async (int id, IRestaurantService restaurantService) =>
         {
             var success = await restaurantService.DeleteRestaurantAsync(id);
             return success.Data ? Results.NoContent() : Results.NotFound();
-        });
+        }).RequireAuthorization("IsRestaurantOwner");
 
         group.MapGet("/search", async (string? city, string? tag, IRestaurantService restaurantService) =>
         {

@@ -21,7 +21,7 @@ public class AuthService(
 
         var user = await dbContext.Users
             .Include(u => u.RefreshTokens)
-            .FirstOrDefaultAsync(u => u.Email == dto.Email);
+            .SingleOrDefaultAsync(u => u.Email == dto.Email);
 
         var pwOk = user != null && passwordHasher.VerifyHashedPassword(user, user.Password, dto.Password) ==
             PasswordVerificationResult.Success;
@@ -48,7 +48,7 @@ public class AuthService(
 
         var old = await dbContext.RefreshTokens
             .Include(r => r.User)
-            .FirstOrDefaultAsync(r => r.Token == dto.RefreshToken);
+            .SingleOrDefaultAsync(r => r.Token == dto.RefreshToken);
 
         if (old == null || old.Expires <= DateTime.UtcNow)
             return OperationResult<AuthResponseDto>.Fail("Invalid or expired refresh token");

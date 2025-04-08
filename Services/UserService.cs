@@ -3,6 +3,7 @@ using BookRest.Data;
 using BookRest.Dtos.User;
 using BookRest.Extensions;
 using BookRest.Models;
+using BookRest.Models.Enums;
 using BookRest.Other;
 using BookRest.Services.Interfaces;
 using FluentValidation;
@@ -60,7 +61,7 @@ public class UserService(
         {
             return OperationResult<UserDisplayDto>.Fail("Email already in use.");
         }
-
+        
         var user = mapper.Map<User>(dto);
 
         user.Password = passwordHasher.HashPassword(user, user.Password);
@@ -132,5 +133,14 @@ public class UserService(
         await dbContext.SaveChangesAsync();
 
         return OperationResult<bool>.Ok(true);
+    }
+
+    public async Task<OperationResult<UserDisplayDto>> RegisterUserAsync(RegistrationDto dto)
+    {
+        var createDto = mapper.Map<UserCreateDto>(dto);
+
+        createDto.Role = UserRole.Customer;
+        
+        return await CreateUserAsync(createDto);
     }
 }
