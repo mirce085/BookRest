@@ -54,7 +54,6 @@ builder.Services.AddValidatorsFromAssemblyContaining<MenuItemCreateValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<MenuItemUpdateValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<NotificationCreateValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<NotificationUpdateValidator>();
-
 builder.Services.AddSignalR();
 builder.Services.AddAuthentication().AddJwtBearer(options =>
 {
@@ -86,7 +85,7 @@ var app = builder.Build();
 
 using var dbContext = app.Services.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext();
 
-dbContext.Database.EnsureCreated();
+//dbContext.Database.EnsureCreated();
 //dbContext.Database.EnsureDeleted();
 
 app.UseAuthentication();

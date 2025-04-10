@@ -25,18 +25,18 @@ public static class UserEndpoints
         {
             var createdUser = await userService.CreateUserAsync(dto);
             return Results.Created($"/api/users/{createdUser.Data!.UserId}", createdUser);
-        });
+        }).RequireAuthorization("AdminOnly");
         
         group.MapPut("/{id:int}", async (int id, UserUpdateDto dto, IUserService userService) =>
         {
             var updatedUser = await userService.UpdateUserAsync(id, dto);
             return Results.Ok(updatedUser);
-        });
+        }).RequireAuthorization("AdminOnly");
         
         group.MapDelete("/{id:int}", async (int id, IUserService userService) =>
         {
             var success = await userService.DeleteUserAsync(id);
             return success.Data ? Results.NoContent() : Results.NotFound();
-        });
+        }).RequireAuthorization("AdminOnly");;
     }
 }

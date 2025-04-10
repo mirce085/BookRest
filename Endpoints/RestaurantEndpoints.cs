@@ -1,5 +1,7 @@
+using System.Security.Claims;
 using BookRest.Dtos.Restaurant;
 using BookRest.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BookRest.Endpoints;
 
@@ -27,8 +29,16 @@ public static class RestaurantEndpoints
             return Results.Created($"/api/restaurants/{createdRestaurant.Data!.RestaurantId}", createdRestaurant);
         }).RequireAuthorization("OwnerOrAdmin");
         
-        group.MapPut("/{id:int}", async (int id, RestaurantUpdateDto dto, IRestaurantService restaurantService) =>
+        group.MapPut("/{id:int}", async (
+            int id,
+            RestaurantUpdateDto dto,
+            IRestaurantService restaurantService,
+            IAuthorizationService   auth,
+            ClaimsPrincipal         user) =>
         {
+            var result = await auth.AuthorizeAsync(user, id, "IsRestaurantOwner");
+            if (!result.Succeeded) return Results.Forbid();
+            
             var updatedRestaurant = await restaurantService.UpdateRestaurantAsync(id, dto);
             return Results.Ok(updatedRestaurant);
         }).RequireAuthorization("IsRestaurantOwner");
